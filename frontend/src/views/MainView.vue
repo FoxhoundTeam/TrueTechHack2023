@@ -20,6 +20,7 @@
           preload="auto"
           controls
           id="video-id"
+          
           class="video video-js
             vjs-static-controls
             vjs-nofull"
@@ -134,6 +135,10 @@
               <v-radio dense
                 label="Фильтр: курение и сигареты"
                 value="smoking"
+              ></v-radio>
+              <v-radio dense
+                label="Фильтр: интимные сцены"
+                value="censored"
               ></v-radio>
             </v-radio-group>
             <v-btn disabled>Применить</v-btn>
@@ -336,6 +341,7 @@ import Uppy from '@uppy/core'
 
 import 'video.js/dist/video-js.css'
 import videojs from 'video.js';
+import axios from 'axios'
 
 
 // import { fabric } from 'fabric';
@@ -386,6 +392,8 @@ export default {
         },
       ], // список видео для просмотра/обработки
       selectedVideo : null,
+      pending_request_id : null,
+      percent_ready : 100,
     }
   },
   computed: {
@@ -550,6 +558,63 @@ export default {
       this.drawImage();
     },
 
+    startprocessing(video_object){ // запрос на начало обработки видео
+
+      // при успешном запросе возвращается id обрабатываемой задачи
+      axios.get("/api/startprocessing",
+      { params: {id:video_object.id, type:this.backendFilters}})
+      .then(response => {
+        if(response.data.status!="ok"){
+          this.pending_request_id = response.data.request_id;
+        }
+        else{
+          this.pending_request_id = null;
+        }
+      })
+      .catch(error => {
+        this.pending_request_id = null;
+        this.$emit("showerror","Ошибка сервера ", error);
+      });
+    },
+
+    waitprocessing(/* video_object */){ // polling завешения обработки
+      // при успешном запросе возвращается имя файла обработанного видео
+      // (или процент выполнения и видео-заглушка)
+      axios.get("/api/waitprocessing")
+      .then(response => {
+        if(response.data.status!="ok"){
+          const poster_class = document.querySelector('.vjs-poster');
+          poster_class.style.display = 'block';
+          poster_class.style.backgroundImage = 'loading_screen.gif';
+          this.player.posterImage.show();
+          //$('.vjs-poster').css({
+          //  'background-image': 'url('+videoposter+')',
+          //  'display': 'block'
+          //});
+          
+          this.percent_ready = response.data.percent_ready;
+        }
+        else{
+          this.pending_request_id = null;
+        }
+      })
+      .catch(error => {
+        this.pending_request_id = null;
+        this.videourl = "videostub.mp4";
+        this.percent_ready = 100;
+        this.$emit("showerror","Ошибка сервера ", error);
+      });
+    },
+
+    show_wait_poster(){
+      // const poster_class = document.querySelector('.vjs-poster');
+      // console.log("*** poster_class = ", poster_class);
+      // this.player.posterImage = "loading_screen.gif";
+      // poster_class.display = 'block';
+      // poster_class.backgroundImage = 'loading_screen.png';
+      this.player.poster("loading_screen.gif");
+      // this.player.poster(null);
+    }
   },  
 
   watch:{
@@ -633,9 +698,15 @@ export default {
         //this.resize_canvas();
         this.drawImage();
       });
+
+
     });
 
-    
+    // const poster_class = document.querySelector('.vjs-poster');
+    // console.log();
+    // poster_class.style.display = 'block';
+    // poster_class.style.backgroundImage = 'loading_screen.png';
+    // this.player.posterImage.show();
 
     // this.video.addEventListener(
     //   "play",
