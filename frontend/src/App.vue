@@ -100,10 +100,6 @@
           <router-view></router-view>
         </v-container>
     </v-main>
-
-    <v-footer app>
-      Page footer
-    </v-footer>
 </v-app>
 </template>
 

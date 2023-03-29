@@ -1,0 +1,17 @@
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+User=ornstein
+Group=www-data
+WorkingDirectory=/home/ornstein89/TrueTechHack2023
+ExecStart=/home/ornstein89/TrueTechHack2023/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 4 \
+          --bind unix:/run/gunicorn.sock \
+          foxeye.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

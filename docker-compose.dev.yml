@@ -1,0 +1,65 @@
+version: '3.8'
+services:
+  robosculptor_db_dev:
+    image: postgres:14-alpine
+    container_name: postgres14_robosculptor
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=robosculptor_db_dev
+      - POSTGRES_USER=django_dev
+      - POSTGRES_PASSWORD=ornstein
+    # ports:
+    #   - 5435:5432
+    # expose:
+    #   - 5432
+    #   - 5433
+    #   - 5435
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: backend_robosculptor_dev
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+          sh -c "python backend/manage.py makemigrations AdminApp AssistantApp &&
+          python backend/manage.py migrate --noinput &&
+          python backend/manage.py runserver 0.0.0.0:8000"
+    # python manage.py collectstatic --noinput &&
+    volumes:
+      - .:/backend
+    ports:
+      - 8000:8000
+    env_file:
+      - backend/.env.dev
+      # - "127.0.0.1:5435:5435"
+    environment:
+      - POSTGRES_HOST=robosculptor_db_dev
+      - POSTGRES_NAME=robosculptor_db_dev
+      - POSTGRES_USER=django_dev
+      - POSTGRES_PASSWORD=ornstein
+    depends_on:
+      - robosculptor_db_dev
+      # - backend-init
+  # backend-init:
+  #   command: python manage.py migrate --noinput
+  #   volumes:
+  #     - .:/backend
+  #   depends_on:
+  #     - db
+  frontend:
+    container_name: frontend_robosculptor_dev
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - '.:/frontend'
+      - '/frontend/node_modules'
+    ports:
+      - 8080:8080
+    command: sh -c "cd frontend && npm run serve"
+volumes:
+  postgres_data:

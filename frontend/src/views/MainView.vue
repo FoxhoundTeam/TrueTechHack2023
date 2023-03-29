@@ -54,16 +54,94 @@
       </div>
 
       <v-card 
-        class="pa-1 my-1"
-        style="height: 20%">
+        class="pa-1 mt-1"
+        no-gutters
+        style="height: 30%"
+        >
 
-        <v-card-title>
+        <v-card-title class="ma-0 pa-0">
           Фильтры
           <v-spacer/>
           <v-switch
             v-model="filtersOn"
           ></v-switch>
         </v-card-title>
+
+        <v-row class="pa-1">
+          <!-- фильтры на фронте - цвета -->
+          <v-col>
+            <!-- <div style="display: flex;"> -->
+              <v-slider dense thumb-label
+                label="Насыщен."
+                v-model="saturate"
+                min="0.0" max="5.0" step="0.1"
+              />
+              <v-slider dense thumb-label
+                label="Яркость"
+                v-model="brightness"
+                min="0" max="3" step="0.1"
+              />
+              <v-slider dense thumb-label
+                label="Оттенок"
+                v-model="hue"
+                min="0" max="360" step="1"
+              />
+            <!-- </div> -->
+          </v-col>
+
+          <v-col>
+            <!-- <div style="display: flex;"> -->
+              <v-slider dense thumb-label
+                label="Сепия"
+                v-model="sepia"
+                min="0" max="1" step="0.05"
+              />
+              <v-slider dense thumb-label
+                label="Контр."
+                v-model="contrast"
+                min="0" max="5" step="0.05"
+              />
+            <!-- </div> -->
+          </v-col>
+          
+          <!-- фильтры на беке -->
+          <v-col class="pa-1">
+            <v-radio-group v-model="backendFilters" dense>
+              <v-radio dense
+                label="Фильтр мерцания 1"
+                value="flickering1"
+              ></v-radio>
+              <v-radio dense
+                label="Фильтр мерцания 2"
+                value="flickering2"
+              ></v-radio>
+              <v-radio dense
+                label="Фильтр: курение и сигареты"
+                value="smoking"
+              ></v-radio>
+            </v-radio-group>
+            <v-btn disabled>Применить</v-btn>
+          </v-col>
+
+          <!-- фильтр на фронте - тип цензуры -->
+          <v-col class="pa-1">
+            <v-radio-group v-model="censureFilters" dense>
+              <v-radio dense
+                label="Закрашивние"
+                value="fill"
+              ></v-radio>
+              <v-radio dense
+                label="Размытие"
+                value="blur"
+              ></v-radio>
+              <v-radio dense
+                label="Пикселизация"
+                value="pixelate"
+              ></v-radio>
+            </v-radio-group>
+          </v-col>
+          
+        </v-row>
       </v-card>
     </v-col>
 
@@ -250,6 +328,17 @@ export default {
       canvasInterval : null, // таймер обновления канваса
 
       filtersOn : true, // отображать фильтрованное или исходное видео
+      backendFilters : "",
+      censureFilters : "",
+
+      /* https://codepen.io/ygjack/pen/xrqQjR */
+      saturate : 1.0, // min="0" max="5" step="0.1" value="1"
+      brightness : 1.0, // min="0" max="3" step="0.05" value="0"
+      hue : 0.0, // min="0" max="360" step="1" value="0"
+      sepia : 0.0, //min="0" max="1" step="0.05" value="0"
+      contrast : 1.0, // min="0" max="5" step="0.05" value="1"
+
+      colorfilters : "",
     }
   },
   computed: {
@@ -262,6 +351,7 @@ export default {
                 // inline: true})//.use(Webcam)
       }
   },
+
   methods:{
 
     /* методы для filepond */
@@ -353,6 +443,7 @@ export default {
       var fit_x = (this.video_canvas.width - fit_width) / 2;
       var fit_y = (this.video_canvas.height - fit_height) / 2;
       
+      ctx.filter = this.colorfilters;
       ctx.drawImage(tmpCanvas,
         0, 0,
         tmpCanvas.width, tmpCanvas.height,
@@ -404,6 +495,22 @@ export default {
       }
     },
 
+    setup_color_filters() { // фильтры цвета
+      /* на основе https://codepen.io/ygjack/pen/xrqQjR */
+      this.colorfilters =
+        `saturate(${this.saturate}) hue-rotate(${this.hue}deg) brightness(${this.brightness}) contrast(${this.contrast}) sepia(${this.sepia})`;
+      console.log("***filters = ", this.colorfilters);
+      this.drawImage();
+    },
+
+  },  
+
+  watch:{
+    saturate(){ this.setup_color_filters(); },
+    brightness(){ this.setup_color_filters(); },
+    hue(){ this.setup_color_filters(); },
+    sepia(){ this.setup_color_filters(); },
+    contrast(){ this.setup_color_filters(); },
   },
 
   mounted(){
@@ -519,7 +626,7 @@ export default {
 .video-canvas-container {
   margin: 0 auto;
   width: 100%;
-  height: 80%;
+  height: 70%;
   position: relative;
 }
 

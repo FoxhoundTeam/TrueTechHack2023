@@ -1,0 +1,146 @@
+version: '3.8'
+services:
+  # запсь, работавшая до отдельного docker-файла и разворачивания начального содержимого
+  # robosculptor_db:
+  #   image: postgres:14-alpine
+  #   container_name: postgres14_robosculptor
+  #   ports:
+  #     - 5430:5432 # доступ к БД извне по порту 5430
+  #   restart: always
+  #   volumes:
+  #     - postgres_volume:/var/lib/postgresql/data
+  #   environment:
+  #     - POSTGRES_DB=robosculptor_db
+  #     - POSTGRES_USER=django
+  #     - POSTGRES_PASSWORD=ornstein
+
+  robosculptor_db:
+    build:
+      context: ./db
+      dockerfile: Dockerfile.prod
+    # image: postgres:14-alpine
+    container_name: postgres14_foxeye
+    ports:
+      - 5430:5432 # доступ к БД извне по порту 5430
+    restart: always
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+      # - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_DB=foxeye_db
+      - POSTGRES_USER=django
+      - POSTGRES_PASSWORD=kw2RdBYa
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: backend_prod
+    restart: always
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+    working_dir: /backend
+    command: >
+          sh -c "
+          echo pwd && pwd &&
+          echo ls && ls &&
+          cd backend &&
+          python manage.py makemigrations &&
+          python manage.py migrate --noinput &&
+          gunicorn --bind 0.0.0.0:8000 --workers 4 foxeye.wsgi:application
+          "
+    # python manage.py collectstatic --noinput &&
+    volumes:
+      - .:/backend
+    ports:
+      - 8000:8000
+    env_file:
+      - backend/.env.prod
+    environment:
+      - POSTGRES_HOST=foxeye_db
+      - POSTGRES_NAME=foxeye_db
+      - POSTGRES_USER=django
+      - POSTGRES_PASSWORD=kw2RdBYa
+      # для работы с командой python manage.py createsuperuser --noinput
+      # https://docs.djangoproject.com/en/4.1/ref/django-admin/#django-admin-createsuperuser
+      # не подходит, так как каждый раз сбрасывает пароль
+      # - DJANGO_SUPERUSER_USERNAME=admin
+      # - DJANGO_SUPERUSER_PASSWORD=adminpass
+      # - DJANGO_SUPERUSER_EMAIL="admin@admin.com"
+      # - DEBUG=0
+      # - SECRET_KEY="django-insecure-63-b9e&kzla8vd)k=5)mc5z$ji&e&o$^+873s)r)^06s!s0^42"
+      # - ALLOWED_HOSTS="localhost, 127.0.0.1, 0.0.0.0, 158.160.0.127"
+    # depends_on:
+    #   - foxeye_db
+      # - backend-init
+  
+  # backend-init: # вариант сделать заполнение БД тестовыми данными через этап сборки контейнера
+  #   command: python manage.py migrate --noinput
+  #   volumes:
+  #     - .:/backend
+  #   depends_on:
+  #     - db
+
+  frontend:
+    container_name: frontend_prod
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    volumes:
+      # - '.:/frontend'
+      # - '/frontend/node_modules'
+      - vue_dist:/frontend/dist
+    # command: sh -c "cd frontend && npm run build"
+  nginx:
+    container_name: nginx_prod
+    restart: unless-stopped
+    # expose:
+    #   - 8000
+    ports:
+      - 80:80
+      - 443:443
+      # - 8000:8000
+    volumes:
+      - ./backend/static:/static
+      - ./backend/media:/media
+      - vue_dist:/dist
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+      - frontend
+  # pgadmin:
+  #   container_name: pgadmin4_robosculptor_prod
+  #   image: dpage/pgadmin4
+  #   restart: always
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: nk260an@gmail.com
+  #     PGADMIN_DEFAULT_PASSWORD: ornstein
+  #   ports:
+  #     - "${PGADMIN_PORT:-5050}:80"
+  #   volumes:
+  #      - pgadmin_volume:/var/lib/pgadmin
+  #   depends_on:
+  #     - robosculptor_db
+
+  # videostream:
+  #   build:
+  #     context: ./videoserver
+  #     dockerfile: Dockerfile.prod
+  #   command: >
+  #         sh -c "
+  #         cd /videoserver
+  #         python streamSeverGStreamer.py
+  #         "
+  #   container_name: videostream_robosculptor_prod
+  #   restart: always
+  #   ports:
+  #     - 8554:8554
+  #   volumes:
+  #     - ./videoserver:/videoserver
+volumes:
+  postgres_volume:
+  static_volume:
+  vue_dist:
+  pgadmin_volume:
