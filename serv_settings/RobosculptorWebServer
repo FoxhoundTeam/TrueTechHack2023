@@ -7,19 +7,19 @@ server {
     location = /favicon.ico { access_log off; log_not_found off; }
 
     # location /static/ {
-    #     root /home/ornstein/RobosculptorWebServer;
+    #     root /home/ornstein89/TrueTechHack2023;
     # }
 
     location /static {
-            alias /home/ornstein/RobosculptorWebServer/static;
+            alias /home/ornstein89/TrueTechHack2023/static;
     }
 
     location /media {
-            alias /home/ornstein/RobosculptorWebServer/media;
+            alias /home/ornstein89/TrueTechHack2023/media;
     }
 
     # location / {
-    #     root /home/ornstein/RobosculptorWebServer/frontend/dist;
+    #     root /home/ornstein/TrueTechHack2023/frontend/dist;
     # }
 
     location / {

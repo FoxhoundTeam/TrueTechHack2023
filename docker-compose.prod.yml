@@ -1,20 +1,7 @@
 version: '3.8'
 services:
-  # запсь, работавшая до отдельного docker-файла и разворачивания начального содержимого
-  # robosculptor_db:
-  #   image: postgres:14-alpine
-  #   container_name: postgres14_robosculptor
-  #   ports:
-  #     - 5430:5432 # доступ к БД извне по порту 5430
-  #   restart: always
-  #   volumes:
-  #     - postgres_volume:/var/lib/postgresql/data
-  #   environment:
-  #     - POSTGRES_DB=robosculptor_db
-  #     - POSTGRES_USER=django
-  #     - POSTGRES_PASSWORD=ornstein
 
-  robosculptor_db:
+  foxeye_db:
     build:
       context: ./postgres
       dockerfile: Dockerfile.prod
@@ -40,15 +27,15 @@ services:
     # extra_hosts:
     #   - "host.docker.internal:host-gateway"
     working_dir: /backend
-    command: >
-          sh -c "
-          echo pwd && pwd &&
-          echo ls && ls &&
-          cd backend &&
-          python manage.py makemigrations &&
-          python manage.py migrate --noinput &&
-          gunicorn --bind 0.0.0.0:8000 --workers 4 foxeye.wsgi:application
-          "
+    # command: >
+    #       sh -c "
+    #       echo pwd && pwd &&
+    #       echo ls && ls &&
+    #       cd backend &&
+    #       python manage.py makemigrations &&
+    #       python manage.py migrate --noinput &&
+    #       gunicorn --bind 0.0.0.0:8000 --workers 4 foxeye.wsgi:application
+    #       "
     # python manage.py collectstatic --noinput &&
     volumes:
       - .:/backend
@@ -111,7 +98,7 @@ services:
       - backend
       - frontend
   # pgadmin:
-  #   container_name: pgadmin4_robosculptor_prod
+  #   container_name: pgadmin4_foxeye_prod
   #   image: dpage/pgadmin4
   #   restart: always
   #   environment:
@@ -122,23 +109,8 @@ services:
   #   volumes:
   #      - pgadmin_volume:/var/lib/pgadmin
   #   depends_on:
-  #     - robosculptor_db
+  #     - foxeye_db
 
-  # videostream:
-  #   build:
-  #     context: ./videoserver
-  #     dockerfile: Dockerfile.prod
-  #   command: >
-  #         sh -c "
-  #         cd /videoserver
-  #         python streamSeverGStreamer.py
-  #         "
-  #   container_name: videostream_robosculptor_prod
-  #   restart: always
-  #   ports:
-  #     - 8554:8554
-  #   volumes:
-  #     - ./videoserver:/videoserver
 volumes:
   postgres_volume:
   static_volume:
