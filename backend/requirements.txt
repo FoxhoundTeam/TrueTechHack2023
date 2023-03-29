@@ -1,0 +1,16 @@
+django
+djangorestframework
+markdown       # Markdown support for the browsable API.
+django-filter  # Filtering support
+django-cors-headers
+tensorflow
+torch
+keras
+django-rest-swagger
+gunicorn
+
+# для Windows и -slim контейнера
+psycopg2-binary
+
+# для alpine
+# psycopg2

@@ -1,29 +1,5 @@
 FROM postgres:14-alpine
-WORKDIR /db
-# COPY x11.sql .
-COPY backup_2022_10_6.sql /db
-COPY backup_2022_10_6_2.sql /db
-# RUN mkdir -p /docker-entrypoint-initdb.d
-# COPY init-db.sh /docker-entrypoint-initdb.d/
-# COPY backup_2022_10_6.sql /docker-entrypoint-initdb.d/
-# COPY backup_2022_10_6_2.sql /docker-entrypoint-initdb.d/
-# RUN apk update
-# RUN apk upgrade
-# EXPOSE 5432
-# RUN psql -h localhost -U postgres -f restore.sql 
-# RUN psql -h robosculptor_db -U django -f x11.sql 
-# RUN psql -h localhost -U postgres -f x11.sql
+WORKDIR /postgres
 
-# разворачивание базы massage_protocols
+# разворачивание базы
 USER postgres
-# RUN postgresql start &&\
-# RUN chmod 0700 /var/lib/postgresql/data && \
-# pg_ctl start && \
-# psql -U django -d robosculptor_db -f backup_2022_10_6.sql
-
-# RUN pg_ctl &\
-# psql -U django -d robosculptor_db -f backup_2022_10_6.sql
-
-# добавление тех же записей в базу django
-# RUN postgresql start &&\
-# psql -U django -d robosculptor_db -f backup_2022_10_6_2.sql
