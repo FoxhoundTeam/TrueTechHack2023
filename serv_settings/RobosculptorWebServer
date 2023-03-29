@@ -19,7 +19,7 @@ server {
     }
 
     # location / {
-    #     root /home/ornstein/TrueTechHack2023/frontend/dist;
+    #     root /home/ornstein89/TrueTechHack2023/frontend/dist;
     # }
 
     location / {

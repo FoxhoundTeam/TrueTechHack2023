@@ -25,17 +25,17 @@ services:
     container_name: backend_prod
     restart: always
     # extra_hosts:
-    #   - "host.docker.internal:host-gateway"
+      # - "host.docker.internal:host-gateway"
     working_dir: /backend
     # command: >
-    #       sh -c "
-    #       echo pwd && pwd &&
-    #       echo ls && ls &&
-    #       cd backend &&
-    #       python manage.py makemigrations &&
-    #       python manage.py migrate --noinput &&
-    #       gunicorn --bind 0.0.0.0:8000 --workers 4 foxeye.wsgi:application
-    #       "
+          # sh -c "
+          # echo pwd && pwd &&
+          # echo ls && ls &&
+          # cd backend &&
+          # python manage.py makemigrations &&
+          # python manage.py migrate --noinput &&
+          # gunicorn --bind 0.0.0.0:8000 --workers 4 foxeye.wsgi:application
+          # "
     # python manage.py collectstatic --noinput &&
     volumes:
       - .:/backend
@@ -57,16 +57,16 @@ services:
       # - DEBUG=0
       # - SECRET_KEY="django-insecure-63-b9e&kzla8vd)k=5)mc5z$ji&e&o$^+873s)r)^06s!s0^42"
       # - ALLOWED_HOSTS="localhost, 127.0.0.1, 0.0.0.0, 158.160.0.127"
-    # depends_on:
-    #   - foxeye_db
+    depends_on:
+      - foxeye_db
       # - backend-init
   
-  # backend-init: # вариант сделать заполнение БД тестовыми данными через этап сборки контейнера
-  #   command: python manage.py migrate --noinput
-  #   volumes:
-  #     - .:/backend
-  #   depends_on:
-  #     - db
+   #backend-init: # вариант сделать заполнение БД тестовыми данными через этап сборки контейнера
+    # command: python manage.py migrate --noinput
+    # volumes:
+      # - .:/backend
+    # depends_on:
+      # - db
 
   frontend:
     container_name: frontend_prod
@@ -95,21 +95,21 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     depends_on:
-      - backend
+      # - backend
       - frontend
-  # pgadmin:
-  #   container_name: pgadmin4_foxeye_prod
-  #   image: dpage/pgadmin4
-  #   restart: always
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: nk260an@gmail.com
-  #     PGADMIN_DEFAULT_PASSWORD: ornstein
-  #   ports:
-  #     - "${PGADMIN_PORT:-5050}:80"
-  #   volumes:
-  #      - pgadmin_volume:/var/lib/pgadmin
-  #   depends_on:
-  #     - foxeye_db
+  pgadmin:
+    container_name: pgadmin4_foxeye_prod
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: nk260an@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: ornstein
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+       - pgadmin_volume:/var/lib/pgadmin
+    depends_on:
+      - foxeye_db
 
 volumes:
   postgres_volume:
