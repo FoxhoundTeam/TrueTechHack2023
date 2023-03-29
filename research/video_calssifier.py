@@ -9,7 +9,6 @@ import numpy as np
 import cv2
 from PIL import Image
 from IPython.display import display
-from abc import ABC, abstractmethod
 from nsfw_detector import predict
 from scenedetect import detect, ContentDetector, AdaptiveDetector
 from pprint import pprint
@@ -25,10 +24,11 @@ def central_crop(image):
     return crop_img
 
 
-class VideoClassifier(ABC):
-    """Template of classifier class.
+class IntimateVideoClassifier:
+    """NSWF classifier class.
 
     Attributes:
+    * model_path - path to the model weights
     * input_dim - dimension of input for model.
     * batch_size - is a batch size of frames to the model, classify 
     frames when they will gather in batch.
@@ -38,14 +38,15 @@ class VideoClassifier(ABC):
     * predict - returns probs of frames.
     * classify_scenes - return timecode and frames of scenes to censor
     """
-    @abstractmethod
-    def __init__(self, input_dim, batch_size, threshold):
+
+    def __init__(self, model_path, input_dim, batch_size, threshold=.8):
+        """Note. input_dim = according to the weights of the model 224x224 or 299x299."""
         self.batch_size = batch_size
         self.input_dim = input_dim
-        self.central_crop = True
         self.threshold = threshold
+        self.model = predict.load_model(model_path)
+        self.central_crop = True
 
-    @abstractmethod
     def predict(self, video_path, start_frame=0, end_frame=None, classify_every_n_frames=1):
         """Return probs of frames nswf classes starting from 
         `start_frame`(inclusive) to `end_frame`(exclusive) 
@@ -53,36 +54,6 @@ class VideoClassifier(ABC):
 
         Example: {'number_of_frame':{'class':probability, ...}, ...}
         """
-        ...
-
-    @abstractmethod
-    def classify_scenes(self, video_path, scenes=None, scene_threshold=.1, classify_every_n_frames=1):
-        """Return List of tuples (start of the scene: FrameTimecode, end of the scene: FrameTimecode)
-        
-        Args:
-        * scenes - List of tuples of FrameTimecode to be classified. 
-        If None than create with alghorithm. default None.
-        * scene_threshold - if number of scenes with nswf class > scene_threshold than add it to return.
-
-        FrameTimecode. https://scenedetect.com/projects/Manual/en/latest/api/frame_timecode.html#scenedetect-frame-timecode
-        """
-        ...
-
-    def _preprocess(self, frame):
-        frame = central_crop(frame) if self.central_crop else frame
-        resized_frame = cv2.resize(frame, (self.input_dim, self.input_dim))
-        resized_frame = resized_frame / 255
-        return resized_frame[np.newaxis, ...]
-
-
-class IntimateVideoClassifier(VideoClassifier):
-    def __init__(self, model_path, input_dim, batch_size, threshold=.8):
-        """Note. input_dim = according to the weights of the model 224x224 or 299x299."""
-        super().__init__(input_dim, batch_size, threshold)
-        self.model = predict.load_model(model_path)
-        self.central_crop = True
-
-    def predict(self, video_path, start_frame=0, end_frame=None, classify_every_n_frames=1):
         frame_count = start_frame
 
         batch = []
@@ -126,6 +97,15 @@ class IntimateVideoClassifier(VideoClassifier):
         return output
 
     def classify_scenes(self, video_path, scenes=None, scene_threshold=.1, classify_every_n_frames=1):
+        """Return List of tuples (start of the scene: FrameTimecode, end of the scene: FrameTimecode)
+        
+        Args:
+        * scenes - List of tuples of FrameTimecode to be classified. 
+        If None than create with alghorithm. default None.
+        * scene_threshold - if number of scenes with nswf class > scene_threshold than add it to return.
+
+        FrameTimecode. https://scenedetect.com/projects/Manual/en/latest/api/frame_timecode.html#scenedetect-frame-timecode
+        """
         scenes = scenes or detect(video_path, ContentDetector())
         nswf_scenes = []
         # TODO We create stream for every scene
@@ -167,5 +147,8 @@ class IntimateVideoClassifier(VideoClassifier):
                 nswf_scenes.append(raw_nswf_scenes[idx])
         return nswf_scenes
 
-    def greedy_classify(self, video_path):
-        ...
+    def _preprocess(self, frame):
+        frame = central_crop(frame) if self.central_crop else frame
+        resized_frame = cv2.resize(frame, (self.input_dim, self.input_dim))
+        resized_frame = resized_frame / 255
+        return resized_frame[np.newaxis, ...]
