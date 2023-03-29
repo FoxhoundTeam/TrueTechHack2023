@@ -16,7 +16,7 @@ services:
 
   robosculptor_db:
     build:
-      context: ./db
+      context: ./postgres
       dockerfile: Dockerfile.prod
     # image: postgres:14-alpine
     container_name: postgres14_foxeye
