@@ -1,3 +1,5 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 # TrueTechHack2023
 
 ## Описание
@@ -14,6 +16,19 @@
 ```bash
 sudo docker compose -f docker-compose.prod.yml up -d
 ```
+
+## Структура каталогов
+
+* `backend` - файлы бекенда на DjangoREST и Docker-файл для его развёртывания
+* `frontend` - файлы фронтенда на Vuejs + Vuetify и Docker-файл для его развёртывания
+* `nginx` - файлы конфигурации nginx и Docker-файл для его развёртывания
+* `postgres` - файлы инициализации БД и Docker-файл для её развёртывания
+* `research` - файлы jupyter и python для отладки и демонстрации алгоритмов фильтрации
+    * `Content_Sergey` - файлы для обучения и инференса фильтра контента (курение), и обученные веса
+    * `Flickering_Mihail` - файлы для отработки и демонстрации алгоритма 1 темпорального сглаживания мерцания, опасного при эпилепсии
+    * `Flickering_Yaroslav` - файлы для отработки и демонстрации алгоритма 2 темпорального сглаживания мерцания, опасного при эпилепсии
+* `serv_settings` - файлы для настройки сервера gunicorn
+* `docker-compose.prod.yml` - файл docker compose для автоматизации развёртывания веб-приложени
 
 ## Команда
 
