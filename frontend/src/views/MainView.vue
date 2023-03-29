@@ -65,6 +65,22 @@
           <v-switch
             v-model="filtersOn"
           ></v-switch>
+
+          <v-tooltip top>
+            <template v-slot:activator="{ on, attrs }">
+              <v-chip
+                v-bind="attrs"
+                v-on="on"
+              ><v-icon>mdi-help</v-icon></v-chip>
+            </template>
+            <span>
+              Фильтры цвета (слайдеры) работают на<br/>
+              фронтенде и применяются мгновенно,<br/>
+              чтобы применить фильтры мерцания<br/>
+              и контента, необходимо выбрать один<br/>
+              и нажать кнопку "Применить"<br/>
+            </span>
+          </v-tooltip>
         </v-card-title>
 
         <v-row class="pa-1">
@@ -226,8 +242,27 @@
           </v-tooltip>
 
         </v-card-title>
-        <v-list>
 
+        <!-- список видео -->
+        <v-list>
+          <v-list-item-group
+            v-model="selectedVideo"
+            color="primary"
+            
+          >
+            <v-list-item
+              v-for="(item, i) in videos"
+              :key="i"
+            >
+              <v-list-item-icon>
+                <v-icon>mdi-multimedia</v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title v-text="item.text"></v-list-item-title>
+              </v-list-item-content>
+              {{ Math.floor(item.duration / 60) + ":" + item.duration%60 }}
+            </v-list-item>
+          </v-list-item-group>
         </v-list>
       </v-card>
 
@@ -339,6 +374,18 @@ export default {
       contrast : 1.0, // min="0" max="5" step="0.05" value="1"
 
       colorfilters : "",
+
+      videos : [
+        {
+          url:"video_example.mp4", text:"С мерцанием 1",
+          duration : "60",
+        },
+        {
+          url:"video_example2.mp4", text:"С мерцанием 2",
+          duration:"90",
+        },
+      ], // список видео для просмотра/обработки
+      selectedVideo : null,
     }
   },
   computed: {
@@ -511,6 +558,13 @@ export default {
     hue(){ this.setup_color_filters(); },
     sepia(){ this.setup_color_filters(); },
     contrast(){ this.setup_color_filters(); },
+
+    selectedVideo(nextValue /*, prevValue */){
+      // console.log("prevValue = ", prevValue);
+      // console.log("nextValue = ", this.videos[nextValue]);
+      this.player.src(this.videos[nextValue].url);
+    },
+
   },
 
   mounted(){
