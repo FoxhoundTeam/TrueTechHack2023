@@ -38,7 +38,7 @@
           hidden;"
           -->
           
-          <source src="video_example.mp4" type="video/mp4">
+          <source :src="videos[0].url" type="video/mp4">
         </video>
 
         <canvas id="video-canvas-id"
@@ -141,13 +141,18 @@
                 value="censored"
               ></v-radio>
             </v-radio-group>
-            <v-btn disabled>Применить</v-btn>
           </v-col>
-
+          <v-col class="pa-1">
+            <v-btn progress
+              dense
+              class="primary"
+              :loading="percent_ready < 100"
+              @click="startprocessing">Применить</v-btn>
+          </v-col>
           <!-- фильтр на фронте - тип цензуры -->
           <v-col class="pa-1">
             <v-radio-group v-model="censureFilters" dense>
-              <v-radio dense
+              <v-radio dense disabled
                 label="Закрашивние"
                 value="fill"
               ></v-radio>
@@ -249,7 +254,7 @@
         </v-card-title>
 
         <!-- список видео -->
-        <v-list>
+        <v-list class="text-left overflow-y-auto fill-height">
           <v-list-item-group
             v-model="selectedVideo"
             color="primary"
@@ -263,7 +268,7 @@
                 <v-icon>mdi-multimedia</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
-                <v-list-item-title v-text="item.text"></v-list-item-title>
+                <v-list-item-title v-text="item.name"></v-list-item-title>
               </v-list-item-content>
               {{ Math.floor(item.duration / 60) + ":" + item.duration%60 }}
             </v-list-item>
@@ -369,8 +374,8 @@ export default {
       canvasInterval : null, // таймер обновления канваса
 
       filtersOn : true, // отображать фильтрованное или исходное видео
-      backendFilters : "",
-      censureFilters : "",
+      backendFilters : "flickering1",
+      censureFilters : "blur",
 
       /* https://codepen.io/ygjack/pen/xrqQjR */
       saturate : 1.0, // min="0" max="5" step="0.1" value="1"
@@ -379,21 +384,23 @@ export default {
       sepia : 0.0, //min="0" max="1" step="0.05" value="0"
       contrast : 1.0, // min="0" max="5" step="0.05" value="1"
 
-      colorfilters : "",
+      colorfilters : "", // строка, куда собираются фильтры цвета для передачи в css
 
-      videos : [
-        {
-          url:"video_example.mp4", text:"С мерцанием 1",
-          duration : "60",
-        },
-        {
-          url:"video_example2.mp4", text:"С мерцанием 2",
-          duration:"90",
-        },
-      ], // список видео для просмотра/обработки
+      videos : [ // список видео для просмотра/обработки
+        {name:"censored_default", url: "censored_default.mp4", duration : "85"},
+        {name:"flicker_default1 (bicycle)", url: "flicker_default1 (bicycle).mp4", duration : "85"},
+        {name:"flicker_default2 (disco)", url: "flicker_default2 (disco).mp4", duration : "85"},
+        {name:"flicker_default3 (drone)", url: "flicker_default3 (drone).mp4", duration : "85"},
+        {name:"flicker_default4 (packman)", url: "flicker_default4 (packman).mp4", duration : "85"},
+        {name:"flicker_default5 (test)", url: "flicker_default5 (test).mp4", duration : "85"},
+        {name:"flicker_default6 (thunder)", url: "flicker_default6 (thunder).mp4", duration : "85"},
+        {name:"smoking_default", url: "smoking_default.mp4", duration : "85"},
+      ], 
       selectedVideo : null,
       pending_request_id : null,
       percent_ready : 100,
+
+      pollingInterval : null,
     }
   },
   computed: {
@@ -469,23 +476,26 @@ export default {
         }
       }*/
 
-      this.fill_pixelate(
-        [
-          {x:300, y:300, w:200, h:200},
-          {x:700, y:400, w:200, h:200}
-        ],
-            tmpCanvas, tmpContext);
+      if(this.censureFilters=="pixelate"){
+        this.fill_pixelate(
+          [
+            {x:300, y:300, w:200, h:200},
+            {x:700, y:400, w:200, h:200}
+          ],
+          tmpCanvas, tmpContext);
+      }
       // !!! счётчик this.video.currentTime
 
       // console.log("*** tmp w h before blur", tmpCanvas.width, tmpCanvas.height);
-
-      this.fill_blur(
-        [
-          {x:400, y:600,w:300, h:300},
-          {x:700, y:800,w:300, h:300},
-        ],
-        this.video, tmpContext
-        );
+      if(this.censureFilters=="blur"){
+        this.fill_blur(
+          [
+            {x:400, y:600,w:300, h:300},
+            {x:700, y:800,w:300, h:300},
+          ],
+          this.video, tmpContext
+          );
+      }
 
       console.log("*** tmp w h after blur", tmpCanvas.width, tmpCanvas.height);
 
@@ -559,49 +569,69 @@ export default {
     },
 
     startprocessing(video_object){ // запрос на начало обработки видео
+      
+      console.log("***", this.backendFilters);
+      console.log("***", this.censureFilters);
 
       // при успешном запросе возвращается id обрабатываемой задачи
+      this.percent_ready = 0;
       axios.get("/api/startprocessing",
       { params: {id:video_object.id, type:this.backendFilters}})
       .then(response => {
-        if(response.data.status!="ok"){
+        if(response.data.status!="ok"){ // видео обрабатывается
           this.pending_request_id = response.data.request_id;
+          // запуск таймера long polling
+          this.pollingInterval = window.setInterval(() => {
+            this.waitprocessing(this.pending_request_id);
+          }, 5);
         }
-        else{
+        else{ // сервер не обрабатывает видео
           this.pending_request_id = null;
+          this.percent_ready = 100;
+          clearInterval(this.pollingInterval);
         }
       })
-      .catch(error => {
+      .catch(error => { // сервер не обрабатывает видео
         this.pending_request_id = null;
+        this.percent_ready = 100;
         this.$emit("showerror","Ошибка сервера ", error);
       });
     },
 
-    waitprocessing(/* video_object */){ // polling завешения обработки
+    waitprocessing(/* pending_id */){ // polling завешения обработки
       // при успешном запросе возвращается имя файла обработанного видео
       // (или процент выполнения и видео-заглушка)
-      axios.get("/api/waitprocessing")
+      axios.get("/api/waitprocessing",
+      { params: {id:this.pending_request_id}}
+      )
       .then(response => {
         if(response.data.status!="ok"){
-          const poster_class = document.querySelector('.vjs-poster');
-          poster_class.style.display = 'block';
-          poster_class.style.backgroundImage = 'loading_screen.gif';
-          this.player.posterImage.show();
-          //$('.vjs-poster').css({
-          //  'background-image': 'url('+videoposter+')',
-          //  'display': 'block'
-          //});
-          
-          this.percent_ready = response.data.percent_ready;
+          if(response.data.percent_ready != 100){ // ещё обрабатывается
+            this.player.poster("loading_screen.gif");
+            this.percent_ready = response.data.percent_ready; // модель GUI
+            this.pollingInterval = window.setInterval(() => { // продолжить polling
+              this.waitprocessing(this.pending_request_id);
+            }, 5);
+          }else{ // обработалось
+            this.player.poster(null); // убрать постер
+            this.percent_ready = response.data.percent_ready; // остановить анимацию прогресса
+            clearInterval(this.pollingInterval); // остановить polling
+            this.processed_file = response.data.processed_file; // загрузить видео
+          }
         }
-        else{
+        else{// ошибка
           this.pending_request_id = null;
+          clearInterval(this.pollingInterval);
+          this.percent_ready = 100;
+          this.player.poster(null); // TODO
+          this.processed_file = null; //TODO показывать заглушку
         }
       })
-      .catch(error => {
+      .catch(error => { //ошибка
         this.pending_request_id = null;
-        this.videourl = "videostub.mp4";
+        this.processed_file = null;
         this.percent_ready = 100;
+        this.player.poster(null); // TODO
         this.$emit("showerror","Ошибка сервера ", error);
       });
     },
@@ -628,8 +658,15 @@ export default {
       // console.log("prevValue = ", prevValue);
       // console.log("nextValue = ", this.videos[nextValue]);
       this.player.src(this.videos[nextValue].url);
+      this.drawImage();
     },
-
+    processed_file(next_url/*, old_url*/){
+      if(next_url !== null)
+        this.player.src(next_url);
+    },
+    censureFilters(/* nextValue, prevValue */){
+      this.drawImage();
+    }
   },
 
   mounted(){

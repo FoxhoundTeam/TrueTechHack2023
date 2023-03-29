@@ -18,12 +18,16 @@
           mdi-account-circle
         </v-icon>
       </v-avatar>
-      <p>Имя пользователя</p>
+      <div class="px-4">
+        <span class="text-2xl text-white font-semibold">
+          {{$store.state.username}}
+        </span>
+      </div>
       <v-divider class="mx-1" vertical></v-divider>
       <v-btn class="ml-2" outlined @click="logout">Выход</v-btn>
     </v-app-bar>
 
-    <!-- опция "app" растягивает drawer по кромке экрана,и он не мешает раскладке main -->
+    <!-- опция "app" растягивает drawer по кромке экрана,и он не мешает раскладке main -- >
     <v-navigation-drawer
       :mini-variant.sync="is_drawer_mini"
       width="180"
@@ -32,12 +36,12 @@
       dark
       class="pa-0"
     >
-      <!-- статичное поле над меню навигации, реализация через слот prepend -->
+      < !-- статичное поле над меню навигации, реализация через слот prepend -- >
 
       <v-list class="ma-0 pa-0">
 
-        <!-- статичное поле над меню навигации, реализация через элемент листа -->
-        <!-- <v-list-item>
+        < !-- статичное поле над меню навигации, реализация через элемент листа -- >
+        < !-- <v-list-item>
           <v-list-item-content>
             <v-list-item-title class="text-h6">
               Application
@@ -48,9 +52,9 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-divider></v-divider> -->
+        <v-divider></v-divider> -- >
         
-        <!-- меню навигации, список ссылок -->
+        < !-- меню навигации, список ссылок -- >
         <v-list-item-group
           v-model="selected_nav_link"
           color="primary"
@@ -61,10 +65,10 @@
             :key="i"
             link  
           >
-            <!--
+            < !--
             старый вариант навигации@click="$router.push({name:item.link})"
             теперь перенесён в watch модели selected_nav_link
-            -->
+            -- >
             <v-list-item-icon>
               <v-icon v-text="item.icon"></v-icon>
             </v-list-item-icon>
@@ -79,7 +83,7 @@
       <template v-slot:append>
         <v-divider></v-divider>
         <v-sheet class="pa-1">
-          <!-- опция block растягивает по ширине -->
+          < !-- опция block растягивает по ширине -- >
           <v-btn class="ma-1" light>
             Элемент в<br>слоте append
           </v-btn>
@@ -89,7 +93,7 @@
         </v-sheet>
       </template>
 
-    </v-navigation-drawer>
+    </v-navigation-drawer> -->
 
     <v-main style="height: 100vh;">
         <v-container
@@ -118,7 +122,9 @@ export default {
 
   methods: {
     logout(){
-      //
+      this.$store.commit("setToken", "");
+      this.$store.commit("setUsername", "");
+      this.$router.replace({ name: "LoginView" });
     },
   },
 

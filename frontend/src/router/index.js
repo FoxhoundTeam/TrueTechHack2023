@@ -18,6 +18,7 @@ const routes = [
     path: '/',
     name: 'MainView',
     component: MainView,
+    meta: { requiresAuth: true },
     // beforeEnter: (/*to, from*/) => {},
   },
 

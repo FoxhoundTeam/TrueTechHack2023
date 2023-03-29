@@ -53,6 +53,9 @@
 
 // import { stringify } from 'querystring';
 
+// eslint-disable-next-line no-unused-vars
+import axios from 'axios'
+
 export default {
   name: 'LoginView',
   data(){
@@ -70,14 +73,53 @@ export default {
   },
 
   methods:{
-    login(){},
+    login(){
+        this.$store.commit('setToken', "123456789");
+        this.$store.commit('setUsername', "Пользователь");
+        this.$router.replace({name:"MainView"});
+        return; //TODO временно
+        /*
+        axios.post("/api/auth",
+                  { username:this.username,
+                    password:this.password } )
+          .then(response => {
+            //console.log("response.data = ", response.data);
+            const tmp_token = response.data.token;
+            if(tmp_token && tmp_token.length==40){
+              this.$store.commit('setToken', tmp_token);
+              this.$store.commit('setUsername', this.username);
+              axios.defaults.headers.common['Authorization'] = "Token "+ tmp_token;
+              console.log(localStorage);
+              axios.get("/api/staff",{params:{id:"current"}})
+              .then(response => {
+                this.$store.commit('setCurrentUser', response.data.staff);
+                // TODO в зависимости от группы показать элементы интерфейса
+                console.log("this.$store.state.current_user = ", this.$store.state.current_user);
+                this.$router.replace({name:"MainView"});
+              })
+              .catch(error => {
+                this.$emit('showerror', error);
+              })
+              
+            }
+            else{
+              this.$emit('showerror', "Неверный логин или пароль");
+            }
+          })
+          .catch(error => {
+            this.$emit('showerror', error);
+          });
+          */
+      }
   },
 
-  beforeCreate(){},
 
-  created() {},
-
-  beforeMount(){},
+  beforeMount () {
+    // console.log("beforeMount Token=",this.$store.state.token); // I'm text inside the component.
+    if(this.$store.state.token && this.$store.state.username){
+      this.$router.replace({name:"MainView"});
+    }
+  },
 
   mounted() {},
 
