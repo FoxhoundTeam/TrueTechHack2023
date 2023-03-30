@@ -10,6 +10,16 @@ content-type: application/json
 
 ###
 
+POST https://foxhound-team.ru/api/auth HTTP/1.1
+content-type: application/json
+
+{
+    "username":"user",
+    "password":"ornstein89"
+}
+
+###
+
 POST http://localhost:8000/api/auth/ HTTP/1.1
 content-type: application/json
 
