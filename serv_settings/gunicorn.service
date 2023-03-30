@@ -11,7 +11,7 @@ ExecStart=/home/ornstein89/TrueTechHack2023/venv/bin/gunicorn \
           --access-logfile - \
           --workers 4 \
           --bind unix:/run/gunicorn.sock \
-          foxeye.wsgi:application
+          backend.wsgi:application
 
 [Install]
 WantedBy=multi-user.target
