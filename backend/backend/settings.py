@@ -138,6 +138,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated', # 'rest_framework.permissions.AllowAny',
     ],
-    'EXCEPTION_HANDLER': 'AdminApp.views.custom_exception_handler',
+    # 'EXCEPTION_HANDLER': 'AdminApp.views.custom_exception_handler',
     # 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }

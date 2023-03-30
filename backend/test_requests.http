@@ -1,0 +1,260 @@
+
+### /api/auth - получение токенк
+POST http://localhost:8000/api/auth HTTP/1.1
+content-type: application/json
+
+{
+    "username":"user",
+    "password":"ornstein89"
+}
+
+###
+
+POST http://localhost:8000/api/auth/ HTTP/1.1
+content-type: application/json
+
+{
+    "username":"Isaac Azimov",
+    "password":"The_end_of_eternity"
+}
+
+### /api/visitor - получение по anonymous_id параметров из анкеты посетителя
+### тест на ошибку
+
+GET http://localhost:8000/api/visitors HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+
+### тест первого пользователя
+
+GET http://localhost:8000/api/visitor?id=12AB HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+
+### тест первого пользователя
+
+POST http://localhost:8000/api/visitor.add HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+content-type: application/json
+
+{
+    "first_name":"asdf",
+    "last_name":"asdf",
+    "patronymic":"asfd",
+    "email":"asfd",
+    "phone":"asfd",
+    "anonymous_id":"AAAA",
+    "date_joined":"2022-09-28",
+    "date_birth":"2022-09-28",
+    "height":"180",
+    "weight":"80",
+    "comments":"Нет комментариев",
+    "sex":"Male",
+    "body_params":"[1,2,3,4]",
+    "rfid_uid":"[1,2,3,4]",
+    "rfid_attrs":"[1,2,3,4]"
+}
+
+###
+
+POST http://localhost:8000/api/visitor.add HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+content-type: application/json
+
+{
+    "first_name":"xxxx",
+    "last_name":"xxxx",
+    "patronymic":"",
+    "email":"t72bv@yandex.ru",
+    "phone":"1234657890",
+    "height":170,
+    "weight":70,
+    "comments":"",
+    "sex":"male",
+    "date_birth":"2022-10-11"
+}
+### тест второго пользователя
+
+GET http://localhost:8000/api/visitor?id=120A HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+
+
+########################### обновлённые API на viewset
+
+###
+GET http://localhost:8000/api/visitors
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+
+###
+
+GET http://localhost:8000/api/visitor?id=VODUI3 HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+
+### 
+
+POST http://localhost:8000/api/visitor.edit?id=VODUI3 HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+{
+    "first_name": "Ahmet",
+    "last_name": "-",
+    "rfid_uid": "[1,2,3,4]",
+    "rfid_attrs": "[1,2,3,4]",
+    "sex":"Male"
+}
+
+###
+
+POST http://127.0.0.1:8000/api/visitor.delete HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+{
+    "anonymous_ids":["X8F1LQ"]
+}
+
+########################### обновлённые API на viewset (конец)
+
+### /api/instruction - получение изображений с инструкциями
+### тест на ошибку
+GET http://localhost:8000/api/instruction HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+
+### тест на получение URL изображения
+
+GET http://localhost:8000/api/instruction?name=robot.jpg HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+
+### тест на получение URL изображения
+
+GET http://localhost:8000/api/instruction?name=1.png HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+
+### тест с одним параметром
+
+GET http://localhost:8000/api/session?id=21
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+
+
+### тест с одним параметром
+
+POST http://localhost:8000/api/session.edit?id=21
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+{
+    "duration_minutes": "30"
+}
+### /api/sessions - получение списка и параметров сеансов
+### тест на ошибку
+
+GET http://localhost:8000/api/sessions
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+### тест с одним параметром
+
+GET http://localhost:8000/api/sessions?date_visit=today
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+### тест с одним параметром
+
+GET http://localhost:8000/api/sessions?date_visit=2022-10-24&verbose=True
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+### тест с одним параметром
+
+GET http://localhost:8000/api/sessions?anonymous_id=120A
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+### тест с двумя параметрами
+
+GET http://localhost:8000/api/sessions?anonymous_id=C8XT
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+### тест с двумя параметрами
+GET http://localhost:8000/api/sessions?anonymous_id=120A&date_visit=2022-04-18
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+### тест с двумя параметрами
+GET http://localhost:8000/api/sessions?anonymous_id=120A&date_visit=2022-02-28
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+ 
+### тест с двумя параметрами
+GET http://localhost:8000/api/sessions?date_visit=2022-02-18T00:00:00.000Z
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+### тест с двумя параметрами
+POST http://localhost:8000/api/session.add
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+{
+    "datetime_visit": "2022-10-24 16:00",
+    "session_catalogue_id": "39",
+    "comments": "Нет комментариев",
+    "anonymous_id":"120A"
+}
+
+### тест с двумя параметрами
+
+POST http://localhost:8000/api/session.edit?id=5
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+{
+    "session_catalogue_id": "40",
+    "comments": "Комментарий"
+}
+
+### тест с двумя параметрами
+POST http://localhost:8000/api/session.delete
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+{
+    "session_id":"1"
+}
+
+### тест с двумя параметрами
+GET http://localhost:8000/api/visitors/ HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+### тест с двумя параметрами
+GET http://localhost:8000/api/staff?id=current HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+### protocols
+GET http://localhost:8000/api/protocols_catalogue/ HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+### protocols with sessions
+GET http://localhost:8000/api/protocols_catalogue?sessions=1 HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+### sessions_catalogue
+GET http://localhost:8000/api/sessions_catalogue/ HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+Content-Type: application/json
+
+
+### getdata без параметров
+GET http://localhost:8000/api/getdata/ HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+
+### getdata с двумя параметрами
+GET http://localhost:8000/api/getdata?id=1&table=sessions&verbose=1&origin=true HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
+
+### gettable
+GET http://localhost:8000/api/gettable?table=sessions&verbose=1&origin=true HTTP/1.1
+Authorization:Token 3bfe1d0013f89353c6d3c631b33189bc25c3d8f2
